@@ -1,0 +1,50 @@
+services:
+
+  web_ui:
+    build:
+      context: web_ui
+      dockerfile: Dockerfile
+    ports:
+      - "8080:7860"
+    depends_on:
+      - api
+
+  api:
+    build:
+      context: api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - img_store:/img_store
+    depends_on:
+      - redis
+  
+  redis:
+    image: "redis:alpine"
+    # redis uses the default port 6379,
+    # and is not exposed to the host machine
+    # so it can only be accessed by other containers
+    # in the same network
+  
+  inference:
+    build: 
+      context: inference
+      dockerfile: Dockerfile
+    volumes:
+      - img_store:/img_store
+    # similar to redis, inference is not exposed to the host machine
+    depends_on:
+      - redis
+    
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+
+volumes:
+  img_store:
