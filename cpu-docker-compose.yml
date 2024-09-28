@@ -2,21 +2,23 @@ services:
 
   web_ui:
     build:
-      context: web_ui
-      dockerfile: Dockerfile
+      context: ./web_ui
+      dockerfile: Dockerfile_webui
     ports:
-      - "8080:7860"
+      - "${WEB_UI_EXPOSED_PORT}:7860"
     depends_on:
       - api
 
   api:
     build:
-      context: api
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
+      context: ./api
+      dockerfile: Dockerfile_api
     volumes:
       - img_store:/img_store
+    ports:
+      - "${WEB_API_EXPOSED_PORT}:8000"
+    env_file: 
+      - ./container_configs.env
     depends_on:
       - redis
   
@@ -29,21 +31,15 @@ services:
   
   inference:
     build: 
-      context: inference
-      dockerfile: Dockerfile
+      context: ./inference
+      dockerfile: Dockerfile_inference
     volumes:
       - img_store:/img_store
+    env_file:
+      - ./container_configs.env
     # similar to redis, inference is not exposed to the host machine
     depends_on:
-      - redis
-    
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+      - redis    
 
 
 volumes:
