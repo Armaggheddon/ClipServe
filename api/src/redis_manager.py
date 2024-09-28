@@ -3,7 +3,7 @@ from typing import List, Union
 import redis.asyncio as redis
 import redis_models
 
-class RedisHelper():
+class RedisManager():
     def __init__(self, host, port, decode_responses=False):
         self.host = host
         self.port = port

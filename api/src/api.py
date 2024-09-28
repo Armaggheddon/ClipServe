@@ -1,14 +1,15 @@
-import asyncio
 import uuid
-from fastapi import FastAPI, HTTPException
-import redis.asyncio as redis
 import json
 import base64
-from contextlib import asynccontextmanager
 from typing import List, Union
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+
 import models
-from redis_helper import RedisHelper
+from redis_manager import RedisManager
 from redis_models import RedisResponseItem
+from environment_variables import should_show_api_docs
 
 
 async def write_images(images_path: List[str], images_b64: List[str]):
@@ -18,20 +19,38 @@ async def write_images(images_path: List[str], images_b64: List[str]):
             f.write(base64.b64decode(img_data))
 
 
-redis_helper: Union[RedisHelper, None] = None
+redis_helper: Union[RedisManager, None] = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global redis_helper
-    redis_helper = RedisHelper("redis", 6379)
+    redis_helper = RedisManager("redis", 6379)
     await redis_helper.ping()
 
     yield
 
     await redis_helper.close()
 
+description = """
+API for serving CLIP embeddings. Includes 3 endpoints:
+- **embed-text:** Embeds one or more text
+- **embed-images:** Embeds one or more images
+- **zero-shot-classification:** Classifies images based on provided text labels
+"""
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(
+    lifespan=lifespan,
+    title="ClipServe API",
+    description=description,
+    version="1.0.0",
+    contact={
+        "name": "ClipServe",
+        "url": "https://github.com/Armaggheddon/ClipServe",
+    },
+    docs_url="/docs" if should_show_api_docs() else None,
+    redoc_url=None,
+)
+
 
 
 @app.post("/embed-text", response_model=RedisResponseItem)
