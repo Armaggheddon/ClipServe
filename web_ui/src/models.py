@@ -9,6 +9,7 @@ class ZeroShotClassificationRequest(BaseModel):
     def to_json(self):
         return self.model_dump_json()
 
+
 class ImageEmbedding(BaseModel):
     image_id: str
     embedding: List[float]

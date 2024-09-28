@@ -1,5 +1,4 @@
 import gradio as gr
-import PIL
 import models
 import base64
 import requests
@@ -18,11 +17,12 @@ def zero_shot_classification(image, text):
     image_b64 = base64.b64encode(mem_buffer.getvalue()).decode("utf-8")
     image_b64 = f"data:image/jpeg;base64,{image_b64}"
 
-    labels = []
-    labels.extend([label.strip() for label in text.split(",")])
+    input_labels = [label.strip() for label in text.split(",")]
+    request_labels = []
+    request_labels.extend([f"a photo of a {label}" for label in input_labels])
 
     # create the request object
-    request = models.ZeroShotClassificationRequest(labels=labels, images_b64=[image_b64])
+    request = models.ZeroShotClassificationRequest(labels=request_labels, images_b64=[image_b64])
 
     # make the request to the API
     response = requests.post("http://api:8000/zero-shot-classification", data=request.to_json())
@@ -30,7 +30,7 @@ def zero_shot_classification(image, text):
     # convert the response to the response object
     response = models.RedisResponseItem(**response.json())
     
-    labels = response.classification_result.labels
+    labels = input_labels
     softmax_outputs = response.classification_result.softmax_outputs[0].softmax_scores
 
     return { label: score for label, score in zip(labels, softmax_outputs) }
