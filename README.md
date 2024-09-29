@@ -2,6 +2,10 @@
 <br/>
 <br/>
 
+<p align="center">
+  <img src="./docs/images/clip_serve_logo.svg" width="150" height="150">
+</p>
+
 <h1 align=center>
     <a href="https://github.com/Armaggheddon/ClipServe">ClipServe</a>
 </h1>
