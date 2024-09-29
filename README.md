@@ -28,6 +28,10 @@
 </a> -->
 </p>
 
+<p align="center">
+ClipServe: ⚡ AI-powered image and text analysis 🖼️📄, handling everything from pics to texts – all at lightning speed!
+</p>
+
 ##
 ClipServe is a blazing-fast inference server built on top of the powerful OpenAI CLIP model 🖼️📖. It provides easy-to-use API endpoints for embedding texts, embedding images, and performing zero-shot classification. With ClipServe, you can seamlessly integrate CLIP's capabilities into your applications with minimal overhead.
 
@@ -47,11 +51,14 @@ ClipServe is a blazing-fast inference server built on top of the powerful OpenAI
 
 ## 🚀 Getting Started
 
-### Prerequisites
-- **Docker 🐳:** Install Docker with the Docker Compose plugin ([Overview of Installing Docker](https://docs.docker.com/compose/install/)).
-- **GPU Requirements 💻:** For GPU-enabled Docker Compose, you need an NVIDIA GPU with updated drivers and the NVIDIA Container Toolkit ([Installing NVIDIA Container Toolkit](./docs/installing_nvidia_container_toolkit.md))
+#### Prerequisites
+1. **Docker 🐳:** Install Docker with the Docker Compose plugin ([Overview of Installing Docker](https://docs.docker.com/compose/install/)).
+1. **GPU Requirements 💻:** For GPU-enabled Docker Compose, you need an NVIDIA GPU with updated drivers and the NVIDIA Container Toolkit ([Installing NVIDIA Container Toolkit](./docs/installing_nvidia_container_toolkit.md))
 
-### Installation
+> [!WARNING]
+> Make sure you follow this installation order for proper setup and compatibility. For more information, refer to the official installation guides of each dependency.
+
+#### Installation
 1. Clone the repository:
     ```bash
     git clone https://github.com/Armaggheddon/ClipServe
@@ -77,13 +84,15 @@ ClipServe is a blazing-fast inference server built on top of the powerful OpenAI
         ```bash
         docker compose -f gpu-docker-compose.yml up
         ```
-    > [!TIP]
-    > Add option `-d` to the start command to start the containers in detached mode, e.g. `docker compose -f cpu/gpu-docker-compose.yml up -d`
+> [!TIP]
+> Add option `-d` to the start command to start the containers in detached mode:
+> 
+> `docker compose -f cpu/gpu-docker-compose.yml up -d`
 
 ## Customizations ⚙️
 ClipServe offers a variety of customization options through two environment configuration files: `container_configs.env` and `.env`.
 
-### 1. `container_configs.env` 🔧
+#### 1. `container_configs.env`
 This file allows you to configure key aspects of the application, including API documentation visibility and the CLIP model to use for inference.
 - `SHOW_API_DOCS`: Set to `true` or `false` to show or hide the OpenAPI documentation for the API.
 
@@ -93,12 +102,12 @@ This file allows you to configure key aspects of the application, including API 
     - `openai/clip-vit-base-patch16`
     - `openai/clip-vit-large-patch14-336`
 
-### 2. `.env` ⚙️
+#### 2. `.env` 
 This file is used to configure the exposed ports for both the API and the web UI.
 - `WEB_API_EXPOSED_PORT`: Set the port for accessing the API.
 - `WEB_UI_EXPOSED_PORT`: Set the port for accessing the web UI.
 
-### 3. Disabling the Web UI 🚫
+#### 3. Disabling the Web UI 🚫
 If you don't need the Gradio-powered web UI, you can easily disable it by commenting out or removing the corresponding service in the `cpu/gpu-docker-compose.yml` file:
 ```yaml
 services:
@@ -120,7 +129,7 @@ services:
 These configurations make ClipServe flexible and adaptable to different use cases. Customize it to fit your needs! 🛠️
 
 ## 🔌 API Endpoints
-### 1. `/embed-text` 📝
+#### 1. `/embed-text` 📝
 Embed one or multiple pieces of text
 - **Method:** `POST`
 - **Request:**
@@ -155,7 +164,7 @@ Embed one or multiple pieces of text
     }
     ```
 
-### 2. `embed-image` 🖼️
+#### 2. `embed-image` 🖼️
 Embed one or multiple images. The images are sent as base64 encoded strings with the uri metadata, e.g. `data:image/jpeg;base64,<base64 encoded image>`.
 - **Method:** `POST`
 - **Request:**
@@ -190,7 +199,7 @@ Embed one or multiple images. The images are sent as base64 encoded strings with
     }
     ```
 
-### 3. `/zero-shot-classification` 🎯
+#### 3. `/zero-shot-classification` 🎯
 Perform zero-shot classification on images given a list of text labels.
 - **Method:** `POST`
 - **Request:**
@@ -252,12 +261,12 @@ Perform zero-shot classification on images given a list of text labels.
 ## Screenshots 📸
 Here’s a glimpse of ClipServe in action:
 
-### 1. API Documentation (OpenAPI) 📜
+#### 1. API Documentation (OpenAPI) 📜
 Easily explore and test the API with the built-in OpenAPI documentation served at `localhost:8000/docs`.
 ![openapi documentation](./docs/images/apis.png)
 
 
-### 2. Gradio Web UI 🎨
+#### 2. Gradio Web UI 🎨
 Interact with the model directly via the Gradio-powered web UI for an intuitive experience, served at `localhost:8080`.
 ![webui sample](./docs/images/web_ui.png)
 
@@ -265,7 +274,7 @@ Interact with the model directly via the Gradio-powered web UI for an intuitive 
 ## Usage Example 🚀
 To get started with ClipServe, we’ve included some example code in the [`client_example`](./client_example/) folder. This will help you quickly interact with the API endpoints for embedding text, embedding images, and performing zero-shot classification.
 
-### Running the example
+#### Running the example
 1. Make sure ClipServe is up and running using Docker Compose.
 1. Navigate to the client_example folder and execute the provided scripts.
 
@@ -297,7 +306,7 @@ else:
 For more a more detailed example, check out the [`client_example.py`](./client_example/client_example.py) file, which contains code for text embedding, image embedding, and zero-shot classification.
 
 
-### Easier API Interaction 🛠️
+#### Easier API Interaction 🛠️
 The [`clip_serve_models.py`](./client_example/clip_serve_models.py) file includes all the required models that make it easier to operate with the API. These models are provided to help you format requests and handle responses more effectively.
 
 ## 📚 Libraries Used
