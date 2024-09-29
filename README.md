@@ -29,7 +29,7 @@
 </p>
 
 <p align="center">
-ClipServe: ⚡ AI-powered image and text analysis 🖼️📄, handling everything from pics to texts – all at lightning speed!
+ClipServe: ⚡ AI-powered image and text analysis 🖼️📄, plus zero-shot classification 🎯 – all at lightning speed!
 </p>
 
 ##
