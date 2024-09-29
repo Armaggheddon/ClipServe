@@ -1,9 +1,5 @@
-"""
-API models for ClipServe
-"""
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Union
-from redis_models import TextEmbedding, ImageEmbedding, ClassificationResult
 
 """
 Request models
@@ -67,6 +63,23 @@ class ZeroShotClassificationRequest(BaseModel):
 """
 Response models
 """
+class ImageEmbedding(BaseModel):
+    image_id: str
+    embedding: List[float]
+
+class TextEmbedding(BaseModel):
+    text: str
+    embedding: List[float]
+
+class SoftmaxOutput(BaseModel):
+    image_id: str
+    softmax_scores: List[float]
+
+class ClassificationResult(BaseModel):
+    labels: List[str] = Field(default_factory=list)
+    softmax_outputs: List[SoftmaxOutput] = Field(default_factory=list)
+
+
 class TextEmbeddingResponse(BaseModel):
     """
     TextEmbeddingResponse model, response format for text embeddings.
@@ -88,6 +101,7 @@ class TextEmbeddingResponse(BaseModel):
     model_name: str
     text_embeddings: List[TextEmbedding] = Field(default_factory=list)
 
+
 class ImageEmbeddingResponse(BaseModel):
     """
     ImageEmbeddingResponse model, response format for image embeddings.
@@ -108,6 +122,7 @@ class ImageEmbeddingResponse(BaseModel):
     model_config  = ConfigDict(protected_namespaces=())
     model_name: str
     image_embeddings: List[ImageEmbedding] = Field(default_factory=list)
+
 
 class ClassificationResponse(BaseModel):
     """

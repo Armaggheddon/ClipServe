@@ -1,10 +1,21 @@
-import asyncio
-from typing import List, Union
+from typing import List, Union, Optional
 import redis.asyncio as redis
 import redis_models
 
 class RedisManager():
-    def __init__(self, host, port, decode_responses=False):
+    """
+    Manager class for interacting with Redis
+    using the aioredis library for async operations
+    """
+    def __init__(self, host: str, port:str, decode_responses: bool=False):
+        """
+        Constructor for the RedisManager class
+        
+        Args:
+        - host (str): The host of the Redis server
+        - port (str): The port of the Redis server
+        - decode_responses (bool): Whether to decode responses or not
+        """
         self.host = host
         self.port = port
         self.decode_responses = decode_responses
@@ -13,13 +24,39 @@ class RedisManager():
         self.pool = redis.ConnectionPool.from_url(url=redis_url, decode_responses=decode_responses)
         self.redis_client = redis.Redis.from_pool(self.pool)
 
-    async def ping(self):
+    async def ping(self) -> bool:
+        """
+        Ping the Redis server to check if it is up
+        
+        Returns:
+        - bool: True if the server is up, False otherwise
+        """
         return await self.redis_client.ping()
 
     async def close(self):
+        """
+        Close the connection to the Redis server
+        """
         await self.redis_client.aclose()
 
-    async def enqueue_job(self, job_id: str, texts: Union[str, List[str]] = [], images: Union[str, List[str]] = []):
+    async def enqueue_job(
+            self, 
+            job_id: str, 
+            texts: Optional[Union[str, List[str]]] = None, 
+            images: Optional[Union[str, List[str]]] = None):
+        """
+        Enqueue a job to the Redis server using the 
+        `requests` queue.
+
+        Args:
+        - job_id (str): The ID of the job
+        - texts (Union[str, List[str]]): The text to be enqueued
+        - images (Union[str, List[str]]): The images to be enqueued
+        """
+
+        if texts is None: texts = []
+        if images is None: images = []
+
         _texts = []
 
         if isinstance(texts, str):
@@ -44,9 +81,20 @@ class RedisManager():
             images=[redis_models.RedisImageItem(image_path=image) for image in _images]
         )
 
+        # Push the data to the requests queue head
         await self.redis_client.lpush(f"requests", redis_data.to_json())
 
-    async def get_result(self, job_id) -> redis_models.RedisResponseItem:
+    async def get_result(self, job_id: str) -> str:
+        """
+        Get the result of a job from the Redis server,
+        awaits the queue named `{job_id}-response` for the result
+        
+        Args:
+        - job_id (str): The ID of the job
+        
+        Returns:
+        - str: The Redis response item as a JSON string
+        """
         while True:
             # When calling brprop, the result is a tuple of 2 elements
             # The first element is the key of the list, 

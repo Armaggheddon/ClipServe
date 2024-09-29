@@ -11,13 +11,25 @@ import redis_models
 from environment_variables import get_clip_model_name
 
 def run_inference(model_name: str, device: str):
+    """
+    Run the inference loop continuously pulling requests from the Redis queue
+    and pushing the responses back to the respective queues based on the job_id
+    
+    Args:
+    - model_name (str): The name of the CLIP model
+    - device (str): The device to run the inference on
+    """
     _redis_client = redis.Redis.from_url(url='redis://redis:6379', decode_responses=False)
 
     tokenizer = CLIPTokenizerFast.from_pretrained(model_name, device_map="auto")
     model = CLIPModel.from_pretrained(model_name, device_map="auto").to(device)
     processor = CLIPProcessor.from_pretrained(model_name, device_map="auto")
         
-    print(f"Ping successful: {_redis_client.ping()}")
+    result = _redis_client.ping()
+    if not result:
+        raise ConnectionError("Could not connect to the Redis server")
+    else:
+        print("Connected to the Redis server: ", result)
 
     while True:
         # Result is a 2 element tuple of (queue_id, value)
@@ -26,10 +38,10 @@ def run_inference(model_name: str, device: str):
             continue
 
         queue_item = redis_models.RedisRequestItem.from_json(result[1])
-
-        response = redis_models.RedisResponseItem()
+        response = redis_models.RedisResponseItem(model_name=model_name)
 
         if not queue_item.images:
+            # Embed the text
             txt_list = [txt_item.text for txt_item in queue_item.texts]
             inputs = tokenizer(txt_list, return_tensors="pt", padding=True).to(device)
             outputs = model.get_text_features(**inputs)
@@ -40,6 +52,7 @@ def run_inference(model_name: str, device: str):
                 for txt, embedding in zip(txt_list, model_embeddings)]
 
         elif not queue_item.texts:
+            # Embed the images
             img_list = [PIL.Image.open(image.image_path) for image in queue_item.images]
             inputs = processor(images=img_list, return_tensors="pt").to(device)
             outputs = model.get_image_features(**inputs)
@@ -50,7 +63,7 @@ def run_inference(model_name: str, device: str):
                 for embedding in model_embeddings]
 
         else:
-            # classify the images based on the provided text labels
+            # Embed both the text and images, and perform classification
             txt_list = [txt_item.text for txt_item in queue_item.texts]
             img_list = [PIL.Image.open(image.image_path) for image in queue_item.images]
 
@@ -97,6 +110,7 @@ def run_inference(model_name: str, device: str):
             img_path = img_item.image_path
             os.remove(img_path)
 
+        # Build the response queue name
         redis_response_key = f"{queue_item.job_id}-response"
 
         _redis_client.lpush(
@@ -113,4 +127,5 @@ if __name__ == "__main__":
     print(f"\t- model name: {model_name}")
     print(f"\t- device: {device.capitalize()}")
     print(f"\t- device name: {device_name}")
+    
     run_inference(model_name=model_name, device=device)
